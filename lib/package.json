@@ -1,0 +1,29 @@
+{
+  "name": "ngx-midi",
+  "version": "0.0.1",
+  "description": "Midi service",
+  "author": "Albert Strimitzer",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": {
+    "url": ""
+  },
+  "homepage": "",
+  "keywords": [
+    "midi",
+    "music"
+  ],
+  "license": "SEE LICENCE IN LICENSE FILE",
+  "peerDependencies": {
+  },
+  "ngPackage": {
+    "$schema": "./node_modules/ng-packagr/ng-package.schema.json",
+    "workingDirectory": "../.ng_build",
+    "lib": {
+      "entryFile": "public_api.ts"
+    },
+    "dest": "../dist/lib"
+  }
+}
