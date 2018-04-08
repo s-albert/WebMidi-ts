@@ -1,4 +1,3 @@
-import { MidiService } from "./midi.service";
 import {
   MIDI_SYSTEM_MESSAGES,
   MIDI_CHANNEL_MESSAGES,
@@ -18,7 +17,7 @@ export class Output {
    *
    * @param MIDIOutput midiOutput Actual `MIDIOutput` object as defined by the MIDI subsystem
    */
-  constructor(private midiService: MidiService, public _midiOutput: any) {}
+  constructor(private sysexEnabled: boolean, public _midiOutput: any) {}
 
   /**
    * [read-only] Status of the MIDI port's connection
@@ -190,7 +189,7 @@ export class Output {
     data: number[],
     options: any
   ): Output => {
-    if (!this.midiService.sysexEnabled) {
+    if (!this.sysexEnabled) {
       throw new Error("SysEx message support must first be activated.");
     }
 
@@ -1975,7 +1974,7 @@ export class Output {
    * @return DOMHighResTimeStamp
    * @protected
    */
-  private _parseTimeParameter = (time: number | string): number => {
+  private _parseTimeParameter = (time: number | string): number | undefined => {
     let parsed, value;
 
     if (typeof time === "string" && time.substring(0, 1) === "+") {
@@ -2005,14 +2004,14 @@ export class Output {
   private _convertNoteToArray = (
     note: number | string | Array<number | string>
   ): number[] => {
-    const notes = [];
+    const notes: number[] = [];
 
     if (!Array.isArray(note)) {
       note = [note];
     }
 
     note.forEach(item => {
-      notes.push(MidiService.guessNoteNumber(item));
+      notes.push(Helper.guessNoteNumber(item));
     });
 
     return notes;
@@ -2059,7 +2058,7 @@ export class Output {
    * @method _onMidiMessage
    * @protected
    */
-  public _onMidiMessage = e => {
+  public _onMidiMessage = (e: any) => {
     // Not implemented.
   };
 

@@ -101,7 +101,7 @@ export class MidiService {
    * @throws Error The Web MIDI API is not supported by your browser.
    * @throws Error Jazz-Plugin must be installed to use WebMIDIAPIShim.
    */
-  public enable = (callback, sysex: boolean = false): Observable<void> => {
+  public enable = (callback, sysex: boolean = false): void => {
     if (this.enabled) {
       return;
     }
@@ -462,28 +462,6 @@ export class MidiService {
   };
 
   /**
-   * Returns the octave number for the specified MIDI note number. The returned value will be
-   * between -2 and 8.
-   *
-   * @method getOctave
-
-   *
-   * @param number  An integer representing a valid MIDI note number (between 0 and 127).
-   *
-   * @returns  The octave as an integer between -2 and 8. If the note number passed to
-   * `getOctave()` is invalid, `undefined` will be returned.
-   *
-   * @since 2.0.0-rc.6
-   */
-  public static getOctave(num: number): number | undefined {
-    if (num && num >= 0 && num <= 127) {
-      return Math.floor(num / 12 - 1) - 1;
-    } else {
-      return undefined;
-    }
-  }
-
-  /**
    * Returns the first MIDI `Output` that matches the specified name.
    *
    * Please note that the port names change from one host to another. For example, Chrome does
@@ -515,90 +493,6 @@ export class MidiService {
 
     return undefined;
   };
-
-  /**
-   * Returns a valid MIDI note number given the specified input. The input can be a note name (C3,
-   * F#4, D-2, G8, etc.) or an int between 0 and 127.
-   *
-   * @method guessNoteNumber
-
-   *
-   * @param input  A string to extract the note number from. An integer can also be
-   * used, in which case it will simply be returned (if between 0 and 127).
-   * @throws {Error} Invalid note number.
-   * @returns  A valid MIDI note number (0-127).
-   */
-  public static guessNoteNumber(input: number | string): number {
-    let output = -1;
-
-    if (typeof input === "string") {
-      // string
-      output = MidiService.noteNameToNumber(input);
-    } else if (input && input.toFixed && input >= 0 && input <= 127) {
-      // uint
-      output = Math.round(input);
-    } else if (input >= 0 && input <= 127) {
-      // uint as string
-      output = input;
-    }
-
-    if (output === -1) {
-      throw new Error(`Invalid note number (${input}).`);
-    }
-
-    return output;
-  }
-
-  /**
-   * Returns a MIDI note number matching the note name passed in the form of a string parameter. The
-   * note name must include the octave number which should be between -2 and 8. The name can also
-   * optionally include a sharp "#" or double sharp "##" symbol and a flat "b" or double flat "bb"
-   * symbol: C5, G4, D#-1, F0, Gb7, Eb-1, Abb4, B##6, etc.
-   *
-   * The lowest note is C-2 (MIDI note number 0) and the highest note is G8 (MIDI note number 127).
-   *
-   * @method noteNameToNumber
-
-   *
-   * @param name The name of the note in the form of a letter, followed by an optional "#",
-   * "##", "b" or "bb" followed by the octave number (between -2 and 8).
-   *
-   * @throws {RangeError} Invalid note name.
-   * @throws {RangeError} Invalid note name or note outside valid range.
-   * @return  The MIDI note number (between 0 and 127)
-   */
-  public static noteNameToNumber(name: string): number {
-    if (typeof name !== "string") {
-      name = "";
-    }
-
-    const matches = name.match(/([CDEFGAB])(#{0,2}|b{0,2})(-?\d+)/i);
-    if (!matches) {
-      throw new RangeError("Invalid note name.");
-    }
-
-    const semitones = Semitones[matches[1].toUpperCase()];
-    const octave = parseInt(matches[3]);
-    let result = (octave + 2) * 12 + semitones;
-
-    if (matches[2].toLowerCase().indexOf("b") > -1) {
-      result -= matches[2].length;
-    } else if (matches[2].toLowerCase().indexOf("#") > -1) {
-      result += matches[2].length;
-    }
-
-    if (
-      semitones < 0 ||
-      octave < -2 ||
-      octave > 8 ||
-      result < 0 ||
-      result > 127
-    ) {
-      throw new RangeError("Invalid note name or note outside valid range.");
-    }
-
-    return result;
-  }
 
   /**
    * @method _updateInputsAndOutputs
@@ -710,7 +604,7 @@ export class MidiService {
    * @protected
    */
   private _createInput(midiInput: any): Input {
-    const input = new Input(this, midiInput);
+    const input = new Input(midiInput);
     input._midiInput.onmidimessage = input._onMidiMessage.bind(input);
     return input;
   }
@@ -722,7 +616,7 @@ export class MidiService {
    * @protected
    */
   private _createOutput(midiOutput: any): Output {
-    const output = new Output(this, midiOutput);
+    const output = new Output(this.sysexEnabled, midiOutput);
     output._midiOutput.onmidimessage = output._onMidiMessage.bind(output);
     return output;
   }
@@ -731,7 +625,7 @@ export class MidiService {
    * @method _onInterfaceStateChange
    * @protected
    */
-  private _onInterfaceStateChange = e => {
+  private _onInterfaceStateChange = (e: any) => {
     this._updateInputsAndOutputs();
 
     /**
@@ -768,9 +662,9 @@ export class MidiService {
 
     if (this.interface && e.port.state === "connected") {
       if (e.port.type === "output") {
-        event.port = this.getOutputById(e.port.id);
+        event.port = this.getOutputById(e.port.id) || {};
       } else if (e.port.type === "input") {
-        event.port = this.getInputById(e.port.id);
+        event.port = this.getInputById(e.port.id) || {};
       }
     } else {
       event.port = {

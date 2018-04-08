@@ -9,7 +9,8 @@ import {
   SEMITONE_COUNT,
   CHANNEL_SPECIFIC_MESSAGE
 } from "./enums";
-import { MidiService } from "./midi.service";
+import { Helper } from "./helper";
+
 
 export class Input {
   private _userHandlers = { channel: {}, system: {} };
@@ -22,7 +23,7 @@ export class Input {
    *
    * @param midiInput `MIDIInput` object
    */
-  constructor(private midiService: MidiService, public _midiInput: any) {
+  constructor(public _midiInput: any) {
     this._initializeUserHandlers();
   }
 
@@ -143,8 +144,9 @@ export class Input {
 
     if (channel === undefined) {
       channelArray = ["all"];
-    }
-    if (!Array.isArray(channel)) {
+    } else if (Array.isArray(channel)) {
+      channelArray = channel;
+    } else {
       channelArray = [channel];
     }
 
@@ -237,8 +239,9 @@ export class Input {
 
     if (channel === undefined) {
       channelArray = ["all"];
-    }
-    if (!Array.isArray(channel)) {
+    } else if (Array.isArray(channel)) {
+      channelArray = channel;
+    } else {
       channelArray = [channel];
     }
 
@@ -307,8 +310,9 @@ export class Input {
 
     if (channel === undefined) {
       channelArray = ["all"];
-    }
-    if (!Array.isArray(channel)) {
+    } else if (Array.isArray(channel)) {
+      channelArray = channel;
+    } else {
       channelArray = [channel];
     }
 
@@ -384,7 +388,7 @@ export class Input {
    * @method _onMidiMessage
    * @protected
    */
-  public _onMidiMessage = e => {
+  public _onMidiMessage = (e: any) => {
     if (e.data[0] <= CHANNEL_SPECIFIC_MESSAGE) {
       // channel-specific message
       this._parseChannelEvent(e);
@@ -457,7 +461,7 @@ export class Input {
       event.note = {
         number: data1,
         name: Notes[data1 % SEMITONE_COUNT],
-        octave: MidiService.getOctave(data1)
+        octave: Helper.getOctave(data1)
       };
       event.velocity = data2 / 127;
       event.rawVelocity = data2;
@@ -489,7 +493,7 @@ export class Input {
       event.note = {
         number: data1,
         name: Notes[data1 % SEMITONE_COUNT],
-        octave: MidiService.getOctave(data1)
+        octave: Helper.getOctave(data1)
       };
       event.velocity = data2 / 127;
       event.rawVelocity = data2;
@@ -519,7 +523,7 @@ export class Input {
       event.note = {
         number: data1,
         name: Notes[data1 % SEMITONE_COUNT],
-        octave: MidiService.getOctave(data1)
+        octave: Helper.getOctave(data1)
       };
       event.value = data2 / 127;
     } else if (

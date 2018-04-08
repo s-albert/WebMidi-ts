@@ -7,7 +7,7 @@ export class NgxMidiService {
 
     const midiService = new MidiService();
 
-    midiService.enable((err) => {
+    midiService.enable((err: any) => {
 
       if (err) {
         console.log('WebMidi could not be enabled.', err);
@@ -87,11 +87,11 @@ if (navigator['requestMIDIAccess']) {
 }
 
 // Function executed on successful connection
-function onSuccess(data) {
+function onSuccess(data: any) {
 
-  let noteon,
-      noteoff;
-  const outputs = [];
+  let noteon: number[];
+  let noteoff: number[];
+  const outputs: any[] = [];
 
   // Grab an array of all available devices
   const iter = data.outputs.values();
@@ -106,7 +106,7 @@ function onSuccess(data) {
   // Send the 'note on' and schedule the 'note off' for 1 second later
   outputs[0].send(noteon);
   setTimeout(
-    function() {
+    () => {
       outputs[0].send(noteoff);
     },
     1000
